@@ -1,0 +1,25 @@
+name: python_release
+
+on:
+  workflow_call:
+    inputs:
+      source:
+        type: string
+        required: true
+      tags:
+        type: string
+        required: true
+      environment:
+        type: string
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install container-tagbot
+      - run: tagbot --username="binkcore" --password="${{ secrets.ACR_BINKCORE_PASSWORD }}" --source="binkcore.azurecr.io/${{ inputs.source }}" --tags="${{ inputs.tags }}"

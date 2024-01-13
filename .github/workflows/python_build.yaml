@@ -1,0 +1,49 @@
+name: python_build
+
+on:
+  workflow_call:
+    inputs:
+      application_name:
+        type: string
+        required: true
+      application_version:
+        type: string
+        required: true
+      python_version:
+        type: string
+        required: true
+
+jobs:
+  build_package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ inputs.python_version }}
+      - run: pip install poetry
+      - run: poetry self add "poetry-dynamic-versioning[plugin]"
+      - run: poetry config repositories.azure ${{ secrets.AZURE_DEVOPS_URL_UPLOAD }}
+      - run: poetry build
+      - run: poetry publish -r azure
+  build_container:
+    needs: ["build_package"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: binkcore.azurecr.io
+          username: binkcore
+          password: ${{ secrets.ACR_BINKCORE_PASSWORD }}
+      - uses: docker/build-push-action@v5
+        with:
+          push: true
+          build-args: |
+            PIP_INDEX_URL=${{ secrets.AZURE_DEVOPS_URL }}
+            APP_NAME=${{ inputs.application_name }}
+            APP_VERSION=${{ inputs.application_version }}
+          tags: |
+            binkcore.azurecr.io/${{ inputs.application_name }}:${{ inputs.application_version }}
