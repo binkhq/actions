@@ -47,3 +47,4 @@ jobs:
             APP_VERSION=${{ inputs.application_version }}
           tags: |
             binkcore.azurecr.io/${{ inputs.application_name }}:${{ inputs.application_version }}
+            binkcore.azurecr.io/${{ inputs.application_name }}:latest
