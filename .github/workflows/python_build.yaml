@@ -38,7 +38,7 @@ jobs:
           registry: binkcore.azurecr.io
           username: binkcore
           password: ${{ secrets.ACR_BINKCORE_PASSWORD }}
-      - uses: docker/build-push-action@v5
+      - uses: docker/build-push-action@v6
         with:
           push: true
           build-args: |
